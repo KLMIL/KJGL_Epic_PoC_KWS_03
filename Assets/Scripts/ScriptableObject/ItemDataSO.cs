@@ -11,12 +11,12 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Item", menuName = "Inventory/ItemData")]
-public class ItemData : ScriptableObject
+public class ItemDataSO : ScriptableObject
 {
     public string ID; // 고유 ID (ex, PlasticBottle)
-    public string DisplayName; // 표시 이름 (ex, Plastic Bottle
-    public Sprite Icon; // UI용 아이콘
-    public bool IsElement; // 원소 여부
-    public int ElementLevel; // 원소 레벨. 0: 일반 아이템, 1+: 원소
-    public ItemData NextElementLevel; // 병합 시 다음 레벨 원소
+    public string displayName; // 표시 이름 (ex, Plastic Bottle
+    public Sprite icon; // UI용 아이콘
+    public bool isElement; // 원소 여부
+    public int elementLevel; // 원소 레벨. 0: 일반 아이템, 1+: 원소
+    public ItemDataSO nextElementLevel; // 병합 시 다음 레벨 원소
 }

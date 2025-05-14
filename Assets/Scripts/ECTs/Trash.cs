@@ -13,9 +13,9 @@ using UnityEngine;
 public class Trash : MonoBehaviour
 {
     [Header("Trash Settings")]
-    [SerializeField] ItemData _itemData;
+    [SerializeField] ItemDataSO _itemData;
 
-    public ItemData Item => _itemData;
+    public ItemDataSO Item => _itemData;
 
 
     private void OnDrawGizmosSelected()

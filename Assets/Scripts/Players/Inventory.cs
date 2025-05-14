@@ -20,24 +20,23 @@ public class Inventory : MonoBehaviour
     [Header("Inventory Settings")]
     [SerializeField] int _gridWidth = 8;
     [SerializeField] int _gridHeight = 8;
-    [SerializeField] ItemData[] _decomposeResults;
+    [SerializeField] ItemDataSO[] _decomposeResults; // 분해 레시피
+    [SerializeField] CraftRecipeSO[] _craftRecipes; // 합성 레시피
 
-    ItemData[,] _grid;
-    //List<ItemData> _elements;
+    ItemDataSO[,] _grid;
     Dictionary<string, int> _elements; // 원소 ID와 수량
-    Dictionary<string, ItemData> _elementDataCache; // ID로 ItemData 캐싱
+    Dictionary<string, ItemDataSO> _elementDataCache; // ID로 ItemData 캐싱
 
     private void Awake()
     {
-        _grid = new ItemData[_gridWidth, _gridHeight];
-        //_elements = new List<ItemData>();
+        _grid = new ItemDataSO[_gridWidth, _gridHeight];
         _elements = new Dictionary<string, int>();
-        _elementDataCache = new Dictionary<string, ItemData>();
+        _elementDataCache = new Dictionary<string, ItemDataSO>();
         DontDestroyOnLoad(gameObject); // 씬 변경시 아이템 유지
     }
 
     // 아이템 추가
-    public bool AddItem(ItemData item)
+    public bool AddItem(ItemDataSO item)
     {
         for (int y = 0; y  < _gridHeight; y++)
         {
@@ -46,7 +45,7 @@ public class Inventory : MonoBehaviour
                 if (_grid[x, y] == null)
                 {
                     _grid[x, y] = item;
-                    Debug.Log($"Added {item.DisplayName} to inventory at ({x}, {y})");
+                    Debug.Log($"Added {item.displayName} to inventory at ({x}, {y})");
                     return true;
                 }
             }
@@ -68,13 +67,13 @@ public class Inventory : MonoBehaviour
             Debug.LogWarning($"No item at grid position ({x}, {y})");
             return;
         }
-        if (_grid[x, y].IsElement)
+        if (_grid[x, y].isElement)
         {
-            Debug.LogWarning($"Item at ({x}, {y}) is already an element: {_grid[x, y].DisplayName}");
+            Debug.LogWarning($"Item at ({x}, {y}) is already an element: {_grid[x, y].displayName}");
             return;
         }
 
-        ItemData item = _grid[x, y];
+        ItemDataSO item = _grid[x, y];
         _grid[x, y] = null;
 
         if (_decomposeResults.Length == 0)
@@ -84,7 +83,7 @@ public class Inventory : MonoBehaviour
         }
 
         /* 임시로 랜덤 원소 추가. 추후 item에 따라 정의할 것 */
-        ItemData element = _decomposeResults[Random.Range(0, _decomposeResults.Length)];
+        ItemDataSO element = _decomposeResults[Random.Range(0, _decomposeResults.Length)];
         //_elements.Add(element);
         if (!_elements.ContainsKey(element.ID))
         {
@@ -92,7 +91,7 @@ public class Inventory : MonoBehaviour
             _elementDataCache[element.ID] = element;
         }
         _elements[element.ID]++;
-        Debug.Log($"Decomposed {item.DisplayName} into {element.DisplayName}");
+        Debug.Log($"Decomposed {item.displayName} into {element.displayName}");
     }
 
     // 원소 병합
@@ -104,28 +103,28 @@ public class Inventory : MonoBehaviour
             return;
         }
 
-        Debug.Log($"Elements before merge: {string.Join(", ", _elements.Select(e => $"{_elementDataCache[e.Key].DisplayName} (ID: {e.Value})"))}");
+        Debug.Log($"Elements before merge: {string.Join(", ", _elements.Select(e => $"{_elementDataCache[e.Key].displayName} (ID: {e.Value})"))}");
 
         bool merged = false;
         var keys = _elements.Keys.ToList();
 
         foreach (var id in keys)
         {
-            ItemData element = _elementDataCache[id];
-            if (_elements[id] >= 2 && element.NextElementLevel != null)
+            ItemDataSO element = _elementDataCache[id];
+            if (_elements[id] >= 2 && element.nextElementLevel != null)
             {
                 int mergeCount = _elements[id] / 2;
                 _elements[id] -= mergeCount * 2;
 
-                string nextID = element.NextElementLevel.ID;
+                string nextID = element.nextElementLevel.ID;
                 if (!_elements.ContainsKey(nextID))
                 {
                     _elements[nextID] = 0;
-                    _elementDataCache[nextID] = element.NextElementLevel;
+                    _elementDataCache[nextID] = element.nextElementLevel;
                 }
                 _elements[nextID] += mergeCount;
 
-                Debug.Log($"Merged {mergeCount * 2}x {element.DisplayName} into {mergeCount}x {element.NextElementLevel.DisplayName}");
+                Debug.Log($"Merged {mergeCount * 2}x {element.displayName} into {mergeCount}x {element.nextElementLevel.displayName}");
                 merged = true;
 
                 if (_elements[id] == 0)
@@ -139,42 +138,55 @@ public class Inventory : MonoBehaviour
         {
             Debug.Log("No mergeable elements found");
         }
-        Debug.Log($"Elements after merge: {string.Join(", ", _elements.Select(e => $"{_elementDataCache[e.Key].DisplayName} x{e.Value}"))}");
+        Debug.Log($"Elements after merge: {string.Join(", ", _elements.Select(e => $"{_elementDataCache[e.Key].displayName} x{e.Value}"))}");
+    }
 
+    public bool CraftItem(CraftRecipeSO recipe)
+    {
+        // 필요 원소 체크
+        foreach (var req in recipe.requiredElements)
+        {
+            if (!_elements.ContainsKey(req.elementID) || _elements[req.elementID] < req.quantity)
+            {
+                Debug.LogWarning($"Insufficient {req.elementID} for crafting {recipe.recipeName} (Need: {req.quantity}, Have: {_elements.GetValueOrDefault(req.elementID)})");
+                return false;
+            }
+        }
 
+        // 원소 소모
+        foreach (var req in recipe.requiredElements)
+        {
+            _elements[req.elementID] -= req.quantity;
+            if (_elements[req.elementID] == 0)
+            {
+                _elements.Remove(req.elementID);
+            }
+        }
 
-        //var groups = _elements
-        //    .GroupBy(e => e.ID)
-        //    .Where(g => g.Count() >= 2 && g.First().NextElementLevel != null)
-        //    .ToList();
-
-        //if (groups.Count == 0)
-        //{
-        //    Debug.Log("No mergeable elements found (check ID matches and nextElementLevel).");
-        //    return;
-        //}
-
-
-        //foreach (var group in groups)
-        //{
-        //    ItemData element = group.First();
-        //    ItemData nextLevel = element.NextElementLevel;
-        //    int mergeCount = group.Count() / 2;
-
-        //    for (int i = 0; i < mergeCount; i++)
-        //    {
-        //        _elements.Remove(element);
-        //        _elements.Remove(element);
-        //        _elements.Add(nextLevel);
-        //        Debug.Log($"Merged 2x {element.DisplayName} into {nextLevel.DisplayName}");
-        //    }
-        //}
-
-        //Debug.Log($"Elements after merge: {string.Join(", ", _elements.Select(e => $"{e.DisplayName} (ID: {e.ID})"))}");
+        // 결과 아이템 추가
+        if (AddItem(recipe.resultItem))
+        {
+            Debug.Log($"Crafted {recipe.resultItem.displayName} using {recipe.recipeName}");
+            return true;
+        }
+        else
+        {
+            // 인벤토리 부족하면 원소 복구
+            foreach (var req in recipe.requiredElements)
+            {
+                if (!_elements.ContainsKey(req.elementID))
+                {
+                    _elements[req.elementID] = 0;
+                }
+                _elements[req.elementID] += req.quantity;
+            }
+            Debug.LogWarning($"Failed to craft {recipe.recipeName}: Invnetory full");
+            return false;
+        }
     }
 
     // UI용 데이터 접근 함수
-    public ItemData GetGridItem(int x, int y)
+    public ItemDataSO GetGridItem(int x, int y)
     {
         if (x >= 0 && x < _gridWidth && y >= 0 && y < _gridHeight)
         {
@@ -188,9 +200,14 @@ public class Inventory : MonoBehaviour
         return _elements;
     }
 
-    public ItemData GetElementData(string id)
+    public ItemDataSO GetElementData(string id)
     {
         return _elementDataCache.ContainsKey(id) ? _elementDataCache[id] : null;
+    }
+
+    public CraftRecipeSO[] GetCraftRecipes()
+    {
+        return _craftRecipes;
     }
 
     // 디버깅: 인벤토리 상태 출력
@@ -201,11 +218,11 @@ public class Inventory : MonoBehaviour
         {
             for (int x = 0; x < _gridWidth; x++)
             {
-                output += _grid[x, y] == null ? "[Empty] " : $"[{_grid[x, y].DisplayName}]";
+                output += _grid[x, y] == null ? "[Empty] " : $"[{_grid[x, y].displayName}]";
             }
             output += "\n";
         }
-        output += "Elements: " + string.Join(", ", _elements.Select(e => $"{_elementDataCache[e.Key].DisplayName} x{e.Value}"));
+        output += "Elements: " + string.Join(", ", _elements.Select(e => $"{_elementDataCache[e.Key].displayName} x{e.Value}"));
         Debug.Log(output);
     }
 }

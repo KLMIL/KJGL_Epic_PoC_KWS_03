@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: PlasticBottle
   m_EditorClassIdentifier: 
   ID: PlasticBottle
-  DisplayName: Plastic Bottle
-  Icon: {fileID: -1962887339140331186, guid: 4865e4adc6d03f84286cfb831d1b935c, type: 3}
-  IsElement: 0
-  ElementLevel: 0
-  NextElementLevel: {fileID: 0}
+  displayName: Plastic Bottle
+  icon: {fileID: -1962887339140331186, guid: 4865e4adc6d03f84286cfb831d1b935c, type: 3}
+  isElement: 0
+  elementLevel: 0
+  nextElementLevel: {fileID: 0}

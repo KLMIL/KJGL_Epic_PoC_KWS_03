@@ -117,14 +117,6 @@ public class PlayerController : MonoBehaviour
         {
             PlaceItem();
         }
-        
-        //// 분해 기능 테스트용 코드
-        //if (Input.GetKeyDown(KeyCode.F))
-        //{
-        //    _inventory.DecomposeItem(0, 0);
-        //    _inventory.PrintInventory();
-        //}
-
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             Debug.Log("I Key Down");
@@ -160,9 +152,6 @@ public class PlayerController : MonoBehaviour
         if (Vector2.Distance(transform.position, mousePos) <= _interactionRange)
         {
             /* 아이템 설치 로직 추가 */
-            // 임시: 우클릭으로 병합 및 인벤토리 상태 출력
-            _inventory.MergeElements();
-            _inventory.PrintInventory();
         }
         else
         {
