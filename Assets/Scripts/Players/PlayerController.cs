@@ -34,6 +34,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Inventory")]
     [SerializeField] Inventory _inventory;
+    [SerializeField] InventoryUI _inventoryUI;
 
 
     private void Awake()
@@ -117,11 +118,17 @@ public class PlayerController : MonoBehaviour
             PlaceItem();
         }
         
-        // 분해 기능 테스트용 코드
-        if (Input.GetKeyDown(KeyCode.F))
+        //// 분해 기능 테스트용 코드
+        //if (Input.GetKeyDown(KeyCode.F))
+        //{
+        //    _inventory.DecomposeItem(0, 0);
+        //    _inventory.PrintInventory();
+        //}
+
+        if (Input.GetKeyDown(KeyCode.Tab))
         {
-            _inventory.DecomposeItem(0, 0);
-            _inventory.PrintInventory();
+            Debug.Log("I Key Down");
+            _inventoryUI.ToggleInventory();
         }
     }
 

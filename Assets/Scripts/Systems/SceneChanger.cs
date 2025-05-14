@@ -11,7 +11,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class SceneChnager : MonoBehaviour
+public class SceneChnaner : MonoBehaviour
 {
     [Header("Portal Settings")]
     [SerializeField] string _targetScene;
