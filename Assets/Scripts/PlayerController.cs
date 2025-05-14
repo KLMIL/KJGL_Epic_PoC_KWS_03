@@ -32,6 +32,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float _interactionRange = 2f;
     [SerializeField] LayerMask _itemLayer;
 
+    [Header("Inventory")]
+    [SerializeField] Inventory _inventory;
+
 
     private void Awake()
     {
@@ -113,6 +116,13 @@ public class PlayerController : MonoBehaviour
         {
             PlaceItem();
         }
+        
+        // 분해 기능 테스트용 코드
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            _inventory.DecomposeItem(0, 0);
+            _inventory.PrintInventory();
+        }
     }
 
     private void PickUpItem()
@@ -121,10 +131,11 @@ public class PlayerController : MonoBehaviour
         if (itemCollider != null)
         {
             Trash trash = itemCollider.GetComponent<Trash>();
-            if (trash != null)
+            if (trash != null && _inventory.AddItem(trash.Item))
             {
                 /* 아이템 획득 로직 추가 */
                 Debug.Log($"Picked Up: {itemCollider.name}");
+                _inventory.PrintInventory();
                 Destroy(itemCollider.gameObject);
             }
             else
@@ -142,7 +153,9 @@ public class PlayerController : MonoBehaviour
         if (Vector2.Distance(transform.position, mousePos) <= _interactionRange)
         {
             /* 아이템 설치 로직 추가 */
-            Debug.Log($"Placed item at: {mousePos}");
+            // 임시: 우클릭으로 병합 및 인벤토리 상태 출력
+            _inventory.MergeElements();
+            _inventory.PrintInventory();
         }
         else
         {

@@ -101,7 +101,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5fa2286c5281524e9de4b8b81ce0415, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _itemID: DefaultItem
+  _itemData: {fileID: 11400000, guid: 0ee128446723cbd42a60b74d863aa7e0, type: 2}
 --- !u!70 &5150244181594669257
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

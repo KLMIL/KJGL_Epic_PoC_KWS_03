@@ -13,10 +13,10 @@ using UnityEngine;
 public class Trash : MonoBehaviour
 {
     [Header("Trash Settings")]
-    [SerializeField] string _itemID = "DefaultItem";
-    /* 추후 ScriptableObject로 확장 */
+    [SerializeField] ItemData _itemData;
 
-    public string ItemID => _itemID;
+    public ItemData Item => _itemData;
+
 
     private void OnDrawGizmosSelected()
     {
