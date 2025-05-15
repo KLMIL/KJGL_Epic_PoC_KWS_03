@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a0db698856b63445a77e4a257426a27, type: 3}
+  m_Name: eEarth1
+  m_EditorClassIdentifier: 
+  ID: Earth1
+  displayName: Earth lv1
+  icon: {fileID: 2312819168843003977, guid: b27d35567df19e44591bc2b185618b62, type: 3}
+  isElement: 1
+  elementLevel: 1
+  nextElementLevel: {fileID: 11400000, guid: 3685c378637ff8442b6613c1683bc921, type: 2}
+  decomposeResults: []

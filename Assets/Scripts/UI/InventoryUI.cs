@@ -18,6 +18,9 @@ using UnityEngine.UI;
 
 public class InventoryUI : MonoBehaviour
 {
+    static InventoryUI _instance;
+    public static InventoryUI Instance => _instance;
+
     [Header("UI Components")]
     [SerializeField] GameObject _inventoryPanel;
     [SerializeField] GridLayoutGroup _gridLayout;
@@ -42,6 +45,13 @@ public class InventoryUI : MonoBehaviour
 
     private void Awake()
     {
+        if (_instance != null)
+        {
+            Destroy(gameObject.transform.parent.gameObject);
+            return;
+        }
+        _instance = this;
+
         DontDestroyOnLoad(gameObject.transform.parent.gameObject);
         InitializeUI();
         _inventoryPanel.SetActive(false);
@@ -52,37 +62,59 @@ public class InventoryUI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape) && _activePanel != null && _activePanel.activeSelf)
         {
             CloseActivePanel();
+            if (IsInventoryOpen())
+            {
+                ToggleInventory();
+            }
         }
     }
 
     private void InitializeUI()
     {
-        _gridButtons = new Button[4, 4];
-        _gridIcons = new Image[4, 4];
-        _gridTexts = new TextMeshProUGUI[4, 4];
+        _gridButtons = new Button[_inventory.GridWidth, _inventory.MaxGridHeight]; // 5x5
+        _gridIcons = new Image[_inventory.GridWidth, _inventory.MaxGridHeight];
+        _gridTexts = new TextMeshProUGUI[_inventory.GridWidth, _inventory.MaxGridHeight];
 
-        for (int y = 0; y < 4; y++)
+        int expectedSlots = _inventory.GridWidth * _inventory.MaxGridHeight; // 25
+        if (_gridLayout.transform.childCount != expectedSlots)
         {
-            for (int x = 0; x < 4; x++)
+            Debug.LogError($"Expected {expectedSlots} slots in GridLayout, found {_gridLayout.transform.childCount}");
+            return;
+        }
+
+        for (int y = 0; y < _inventory.MaxGridHeight; y++)
+        {
+            for (int x = 0; x < _inventory.GridWidth; x++)
             {
-                int index = y * 4 + x;
+                int index = y * _inventory.GridWidth + x; // 5열 기준
                 GameObject slot = _gridLayout.transform.GetChild(index).gameObject;
                 _gridButtons[x, y] = slot.GetComponent<Button>();
                 _gridIcons[x, y] = slot.GetComponent<Image>();
                 _gridTexts[x, y] = slot.GetComponentInChildren<TextMeshProUGUI>();
 
+                // 비활성 슬롯 초기 설정
+                bool isLocked = y >= _inventory.ActiveGridHeight;
+                _gridButtons[x, y].interactable = !isLocked;
+                _gridIcons[x, y].color = isLocked ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : Color.white;
+
                 int slotX = x, slotY = y;
+                _gridButtons[x, y].onClick.RemoveAllListeners();
                 _gridButtons[x, y].onClick.AddListener(() => OnSlotClicked(slotX, slotY));
-                var slotDrag = slot.AddComponent<SlotDrag>();
+                var slotDrag = slot.GetComponent<SlotDrag>();
+                if (slotDrag == null) slotDrag = slot.AddComponent<SlotDrag>();
                 slotDrag.Setup(this, slotX, slotY);
-                var slotDrop = slot.AddComponent<SlotDrop>();
+                var slotDrop = slot.GetComponent<SlotDrop>();
+                if (slotDrop == null) slotDrop = slot.AddComponent<SlotDrop>();
                 slotDrop.Setup(this, slotX, slotY);
             }
         }
+        UpdateUI();
     }
 
     public void ShowMergerPanel(GameObject panel)
     {
+        if (_activePanel == panel) return;
+
         _activePanel = panel;
         _activePanel.SetActive(true);
         _inventoryPanel.SetActive(true);
@@ -92,6 +124,8 @@ public class InventoryUI : MonoBehaviour
 
     public void ShowCrafterPanel(GameObject panel)
     {
+        if (_activePanel == panel) return;
+
         _activePanel = panel;
         _activePanel.SetActive(true);
         _inventoryPanel.SetActive(true);
@@ -282,50 +316,59 @@ public class InventoryUI : MonoBehaviour
         _crafterSlots = null;
         UpdateUI();
         Debug.Log("Closed active panel");
+
+        if (IsInventoryOpen())
+        {
+            ToggleInventory();
+        }
     }
 
     private void UpdateUI()
     {
         // 인벤토리 그리드 갱신
-        for (int y = 0; y < 4; y++)
+        for (int y = 0; y < _inventory.MaxGridHeight; y++)
         {
-            for (int x = 0; x < 4; x++)
+            for (int x = 0; x < _inventory.GridWidth; x++)
             {
+                bool isLocked = y >= _inventory.ActiveGridHeight;
+                _gridButtons[x, y].interactable = !isLocked;
                 ItemDataSO item = _inventory.GetGridItem(x, y);
                 _gridIcons[x, y].sprite = item?.icon;
-                _gridIcons[x, y].color = item != null ? Color.white : Color.clear;
+                _gridIcons[x, y].color = isLocked ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : (item != null ? Color.white : Color.clear);
                 _gridTexts[x, y].text = item?.displayName ?? "";
             }
         }
 
         // 병합기 패널 갱신
-        if (_activePanel != null && _activePanel.activeSelf)
+        if (_activePanel != null && _activePanel.activeSelf && _mergerSlots != null)
         {
-            if (_mergerSlots != null)
+            for (int i = 0; i < 2; i++)
             {
-                for (int i = 0; i < 2; i++)
-                {
-                    var item = _mergerSlotItems[i];
-                    _mergerSlots[i].sprite = item?.icon;
-                    _mergerSlots[i].color = item != null ? Color.white : Color.white; // : Color.clear;
-                }
-                var item1 = _mergerSlotItems[0];
-                _mergerResultText.text = item1?.nextElementLevel != null ? $"Result: {item1.nextElementLevel.displayName}" : "";
+                var item = _mergerSlotItems[i];
+                _mergerSlots[i].sprite = item?.icon;
+                //_mergerSlots[i].color = item != null ? Color.white : Color.clear;
+                _mergerSlots[i].color = Color.white;
             }
-            else if (_crafterSlots != null)
+            var item1 = _mergerSlotItems[0];
+            _mergerResultText.text = item1?.nextElementLevel != null ? $"Result: {item1.nextElementLevel.displayName}" : "";
+        }
+
+        // 조합기 패널 갱신
+        if (_activePanel != null && _activePanel.activeSelf && _crafterSlots != null)
+        {
+            for (int i = 0; i < 2; i++)
             {
-                for (int i = 0; i < 2; i++)
-                {
-                    var item = _crafterSlotItems[i];
-                    _crafterSlots[i].sprite = item?.icon;
-                    _crafterSlots[i].color = item != null ? Color.white : Color.white; // : Color.clear;
-                }
+                var item = _crafterSlotItems[i];
+                _crafterSlots[i].sprite = item?.icon;
+                //_crafterSlots[i].color = item != null ? Color.white : Color.clear;
+                _crafterSlots[i].color = Color.white;
             }
         }
     }
 
     private void OnSlotClicked(int x, int y)
     {
+        if (y >= _inventory.ActiveGridHeight) return; // 비활성 슬롯 클릭 무시
         _inventory.DecomposeItem(x, y);
         UpdateUI();
     }
@@ -333,10 +376,6 @@ public class InventoryUI : MonoBehaviour
 
     public void ToggleInventory()
     {
-        //if (_activePanel != null && _activePanel.activeSelf)
-        //{
-        //    _activePanel.SetActive(false);
-        //}
         _inventoryPanel.SetActive(!_inventoryPanel.activeSelf);
         if (_inventoryPanel.activeSelf)
         {
@@ -344,14 +383,21 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
+    public bool IsInventoryOpen()
+    {
+        return _inventoryPanel.activeSelf;
+    }
+
     public void OnSlotDropped(int fromX, int fromY, int toX, int toY)
     {
+        if (fromY >= _inventory.ActiveGridHeight || toY >= _inventory.ActiveGridHeight) return; // 비활성 슬롯 드롭 무시
         _inventory.SwapItems(fromX, fromY, toX, toY);
         UpdateUI();
     }
 
     public void OnItemDeleted(int x, int y)
     {
+        if (y >= _inventory.ActiveGridHeight) return;
         _inventory.RemoveItem(x, y);
         UpdateUI();
         Debug.Log($"Deleted item at ({x}, {y})");

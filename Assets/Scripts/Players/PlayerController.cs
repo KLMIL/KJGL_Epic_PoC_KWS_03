@@ -13,6 +13,9 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
+    static PlayerController _instance;
+    public static PlayerController Instance => _instance;
+
     [Header("Move Parameter")]
     Rigidbody2D _rb;
     [SerializeField] float _walkSpeed = 5f;
@@ -36,9 +39,19 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Inventory _inventory;
     [SerializeField] InventoryUI _inventoryUI;
 
+    [Header("Trash")]
+    [SerializeField] TrashSpawner _trashSpawner;
+
 
     private void Awake()
     {
+        if (_instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        _instance = this;
+
         _rb = GetComponent<Rigidbody2D>();
         //_mainCamera = Camera.main; Inspector 할당 방식으로 변경
         _mainCamera.orthographicSize = _maxZoom;
@@ -79,6 +92,8 @@ public class PlayerController : MonoBehaviour
         {
             Debug.LogWarning("SpawnPoint Not Found");
         }
+
+        _trashSpawner = FindFirstObjectByType<TrashSpawner>();
     }
 
     #region Input Area
@@ -101,6 +116,8 @@ public class PlayerController : MonoBehaviour
 
     private void Look()
     {
+        if (_inventoryUI.IsInventoryOpen()) return;
+
         Vector3 mousePos = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
         Vector2 direction = (mousePos - transform.position).normalized;
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
@@ -109,6 +126,14 @@ public class PlayerController : MonoBehaviour
 
     private void Interact()
     {
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            Debug.Log("Tab Key Down");
+            _inventoryUI.ToggleInventory();
+        }
+
+        if (_inventoryUI.IsInventoryOpen()) return;
+
         if (Input.GetKeyDown(KeyCode.E) || Input.GetMouseButtonDown(0))
         {
             PickUpItem();
@@ -117,11 +142,6 @@ public class PlayerController : MonoBehaviour
         {
             PlaceItem();
         }
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            Debug.Log("Tab Key Down");
-            _inventoryUI.ToggleInventory();
-        }
     }
 
     private void PickUpItem()
@@ -129,12 +149,13 @@ public class PlayerController : MonoBehaviour
         Collider2D itemCollider = Physics2D.OverlapCircle(transform.position, _interactionRange, _itemLayer);
         if (itemCollider != null)
         {
-            Trash trash = itemCollider.GetComponent<Trash>();
+            TrashItem trash = itemCollider.GetComponent<TrashItem>();
             if (trash != null && _inventory.AddItem(trash.Item))
             {
                 /* 아이템 획득 로직 추가 */
                 Debug.Log($"Picked Up: {itemCollider.name}");
                 //_inventory.PrintInventory();
+                _trashSpawner.RemoveTrash(trash.gameObject);
                 Destroy(itemCollider.gameObject);
             }
             else
@@ -161,6 +182,8 @@ public class PlayerController : MonoBehaviour
 
     private void Zoom()
     {
+        if (_inventoryUI.IsInventoryOpen()) return;
+
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         if (scroll != 0f)
         {
@@ -171,6 +194,8 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
+        if (_inventoryUI.IsInventoryOpen()) return;
+
         float currentSpeed = _isRunning ? _runSpeed : _walkSpeed;
         _rb.linearVelocity = _moveInput * currentSpeed;
     }
