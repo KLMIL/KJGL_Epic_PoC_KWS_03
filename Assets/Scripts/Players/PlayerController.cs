@@ -119,7 +119,7 @@ public class PlayerController : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            Debug.Log("I Key Down");
+            Debug.Log("Tab Key Down");
             _inventoryUI.ToggleInventory();
         }
     }
@@ -134,7 +134,7 @@ public class PlayerController : MonoBehaviour
             {
                 /* 아이템 획득 로직 추가 */
                 Debug.Log($"Picked Up: {itemCollider.name}");
-                _inventory.PrintInventory();
+                //_inventory.PrintInventory();
                 Destroy(itemCollider.gameObject);
             }
             else

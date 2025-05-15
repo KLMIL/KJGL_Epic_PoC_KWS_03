@@ -16,6 +16,6 @@ MonoBehaviour:
   resultItem: {fileID: 11400000, guid: df8f3b5971f432741be62569a89ee149, type: 2}
   requiredElements:
   - elementID: Earth1
-    quantity: 2
+    quantity: 1
   - elementID: Earth2
     quantity: 1

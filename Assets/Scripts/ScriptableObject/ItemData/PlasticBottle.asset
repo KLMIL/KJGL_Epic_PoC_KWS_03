@@ -18,3 +18,6 @@ MonoBehaviour:
   isElement: 0
   elementLevel: 0
   nextElementLevel: {fileID: 0}
+  decomposeResults:
+  - {fileID: 11400000, guid: 40a974ca608dcc240af9edb33832ade7, type: 2}
+  - {fileID: 11400000, guid: 79ad1d75efea8894e995e0d8b7eaebc5, type: 2}

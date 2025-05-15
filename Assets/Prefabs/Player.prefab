@@ -188,7 +188,7 @@ GameObject:
   - component: {fileID: 8124617877998920890}
   - component: {fileID: 4914898510329685866}
   - component: {fileID: 6122727612281437763}
-  m_Layer: 0
+  m_Layer: 20
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -234,6 +234,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 32768
   _inventory: {fileID: 8124617877998920890}
+  _inventoryUI: {fileID: 0}
 --- !u!114 &8124617877998920890
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -251,6 +252,8 @@ MonoBehaviour:
   _decomposeResults:
   - {fileID: 11400000, guid: 40a974ca608dcc240af9edb33832ade7, type: 2}
   - {fileID: 11400000, guid: 79ad1d75efea8894e995e0d8b7eaebc5, type: 2}
+  _craftRecipes:
+  - {fileID: 11400000, guid: 2426552b0f4a0754694281762e8b9572, type: 2}
 --- !u!50 &4914898510329685866
 Rigidbody2D:
   serializedVersion: 5

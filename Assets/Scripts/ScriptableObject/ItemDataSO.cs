@@ -19,4 +19,5 @@ public class ItemDataSO : ScriptableObject
     public bool isElement; // 원소 여부
     public int elementLevel; // 원소 레벨. 0: 일반 아이템, 1+: 원소
     public ItemDataSO nextElementLevel; // 병합 시 다음 레벨 원소
+    public ItemDataSO[] decomposeResults; // 아이템별 분해 결과
 }
