@@ -142,7 +142,7 @@ public class Inventory : MonoBehaviour
         /* 아이템 효과 여기서 발동 */
         if (item.ID == "MergerPermit")
         {
-            _warningText.text = "Merger is no available!";
+            _warningText.text = "Merger is now available!";
             _warningText.enabled = true;
             StartCoroutine(DisableWarningText());
             _isMergerAvailable = true;
