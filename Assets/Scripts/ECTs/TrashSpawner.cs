@@ -7,9 +7,7 @@
  * - 맵에 주기적으로 쓰레기를 스폰하는 스크립트
  *********************************************************/
 
-using NUnit.Framework;
 using System.Collections.Generic;
-using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 
 public class TrashSpawner : MonoBehaviour
